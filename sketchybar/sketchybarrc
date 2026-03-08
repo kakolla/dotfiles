@@ -1,0 +1,174 @@
+#!/usr/bin/env sh
+set -euo pipefail
+
+export CONFIG_DIR="$HOME/.config/sketchybar"
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+
+PLUGIN_DIR="$CONFIG_DIR/plugins"
+ITEM_DIR="$CONFIG_DIR/items"
+
+source "$CONFIG_DIR/colors.sh"
+
+# Start stats_provider for CPU temperature
+killall stats_provider 2>/dev/null || true
+# stats_provider --memory ram_available &
+
+
+# Bar
+sketchybar --bar position=top height=32 color="$BAR_COLOR"
+
+# Defaults
+default=(
+  padding_left=6
+  padding_right=6
+  icon.font="JetBrainsMono Nerd Font:Medium:12.0"
+  label.font="JetBrainsMono Nerd Font:Medium:12.0"
+  icon.color="$WHITE"
+  label.color="$WHITE"
+  icon.padding_left=6
+  icon.padding_right=6
+  label.padding_left=6
+  label.padding_right=6
+  background.drawing=off
+  background.height=18
+  background.corner_radius=5
+  background.color=$ITEM_BG_COLOR
+  updates=on
+)
+sketchybar --default "${default[@]}"
+
+
+# # --- front app left side (so it won't sit under the notch) ---
+sketchybar --add item front_app_left left \
+  --set front_app_left \
+    script="$PLUGIN_DIR/front_app.sh" \
+    icon.drawing=off \
+    label.padding_left=10 \
+    label.padding_right=10 \
+    background.drawing=on \
+    background.color=0x22ffffff \
+    background.corner_radius=6 \
+    background.height=18 \
+  --subscribe front_app_left front_app_switched
+
+# run once at startup so it shows immediately
+sketchybar --trigger front_app_switched
+
+# pomodoro timer 
+sketchybar --add event timer_change
+sketchybar --add item timer left \
+  --set timer \
+    script="$PLUGIN_DIR/timer.sh" \
+    update_freq=0 \
+    icon.color=0xffcba6f7 \
+    label.color=0xffcba6f7 \
+    icon.font="JetBrainsMono Nerd Font:Medium:14.0" \
+    drawing=off \
+  --subscribe timer timer_change
+
+# --- Right side items (NO battery) ---
+# sketchybar --add item volume right \
+#   --set volume script="$PLUGIN_DIR/volume.sh" \
+#   --subscribe volume volume_change
+
+# sketchybar --add item clock right \
+#   --set clock update_freq=10 script="$PLUGIN_DIR/clock.sh"
+
+# clock
+sketchybar --add item clock right
+sketchybar --set clock \
+  update_freq=10 \
+  script="$PLUGIN_DIR/clock.sh"
+
+# CPU graph
+sketchybar --add graph cpu_usage right 50
+sketchybar --set cpu_usage \
+  script="$PLUGIN_DIR/cpu_usage.sh" \
+  update_freq=10 \
+  icon.drawing=off \
+  label.drawing=on \
+  graph.color=0xffcba6f7 \
+  graph.fill_color=0x55cba6f7 \
+  graph.line_width=2 \
+  drawing=on
+
+# ram available
+# sketchybar --add item ram_available right \
+#   --set ram_available \
+#     icon="Free" \
+#     icon.drawing=on \
+#     script="sketchybar --set ram_available label=\"\$RAM_AVAILABLE\"" \
+#   --subscribe ram_available system_stats
+
+# swap used
+# sketchybar --add item swp_used right \
+#   --set swp_used \
+#     icon="Swp" \
+#     icon.drawing=on \
+#     script="sketchybar --set swp_used label=\"\$SWP_USED\"" \
+#   --subscribe swp_used system_stats
+
+
+# volume
+sketchybar --add item volume right \
+    --set volume \
+      script="$PLUGIN_DIR/volume.sh" \
+      padding_right=4 \
+    --subscribe volume volume_change \
+
+# battery
+sketchybar --add item battery right
+sketchybar --set battery \
+    update_freq=600 \
+    script="$PLUGIN_DIR/battery.sh" \
+    icon.font="SF Pro:Regular:16.0" \
+    padding_right=4 \
+  --subscribe battery system_woke power_source_change 
+  
+
+
+# weather
+sketchybar --add item weather right \
+  --set weather \
+    script="$PLUGIN_DIR/weather.sh" \
+    update_freq=1800 \
+    icon.drawing=off \
+    label.color=$WHITE \
+    click_script="open -a Weather"
+
+
+# --- Aerospace (current workspace, event-driven) ---
+if command -v aerospace >/dev/null 2>&1; then
+  sketchybar --add event aerospace_workspace_change
+
+  sketchybar --add item aero_space right \
+    --set aero_space \
+      script="$PLUGIN_DIR/aerospace_current.sh" \
+      icon.drawing=off \
+      padding_left=0 \
+      background.drawing=on \
+      background.color=0x33ffffff \
+      background.corner_radius=6 \
+      background.height=18 \
+      label.padding_left=10 \
+      label.padding_right=10 \
+      label.font="JetBrainsMono Nerd Font:Bold:12.0" \
+    --subscribe aero_space aerospace_workspace_change
+
+  # run once at startup
+  sketchybar --trigger aerospace_workspace_change
+fi
+
+# top CPU process
+sketchybar --add item top_process right \
+  --set top_process \
+    icon.drawing=off \
+    label.color=0xffcba6f7 \
+    script="$PLUGIN_DIR/top_process.sh" \
+    update_freq=10
+
+
+
+# force all scripts to run once
+sketchybar --update
+
