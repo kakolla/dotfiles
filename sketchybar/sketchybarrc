@@ -1,6 +1,8 @@
 #!/usr/bin/env sh
 set -euo pipefail
 
+~/.config/display_mode.sh # upon restart, display bar based on clamshell or laptop mode
+
 export CONFIG_DIR="$HOME/.config/sketchybar"
 export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
@@ -13,9 +15,16 @@ source "$CONFIG_DIR/colors.sh"
 killall stats_provider 2>/dev/null || true
 # stats_provider --memory ram_available &
 
+# Detect clamshell (lid closed)
+CLAMSHELL=$(ioreg -r -k AppleClamshellState -d 4 | grep AppleClamshellState | awk '{print $NF}')
+if [ "$CLAMSHELL" = "Yes" ]; then
+  TOPMOST=on
+else
+  TOPMOST=off
+fi
 
 # Bar
-sketchybar --bar position=top height=32 color="$BAR_COLOR"
+sketchybar --bar position=top height=32 color="$BAR_COLOR" display=all topmost=$TOPMOST
 
 # Defaults
 default=(
@@ -38,7 +47,7 @@ default=(
 sketchybar --default "${default[@]}"
 
 
-# # --- front app left side (so it won't sit under the notch) ---
+# # --- Front app left side (so it won't sit under the notch) ---
 sketchybar --add item front_app_left left \
   --set front_app_left \
     script="$PLUGIN_DIR/front_app.sh" \

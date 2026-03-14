@@ -16,3 +16,10 @@ end)
 
 
 
+-- screen watcher, on monitor change restart sketchybar -> restart aerospace
+-- https://www.hammerspoon.org/docs/hs.screen.watcher.html
+hs.screen.watcher.new(function()
+    hs.timer.doAfter(2, function()
+        hs.execute("/opt/homebrew/bin/brew services restart sketchybar")
+    end)
+end):start()
