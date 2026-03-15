@@ -37,6 +37,8 @@ fi
 
 sketchybar --set "$NAME" \
   icon="$ICON" \
-  label.drawing=off \
+  label="$PERCENTAGE%" \
+  label.drawing=on \
+  label.color="$COLOR" \
   icon.color="$COLOR" \
   padding_right=0
