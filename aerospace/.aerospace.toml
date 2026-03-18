@@ -30,6 +30,8 @@ outer.right =      0
 [mode.main.binding]
 alt-slash = 'layout tiles horizontal vertical'
 alt-comma = 'layout accordion vertical'
+alt-minus = 'resize smart -50'
+alt-equal = 'resize smart +50'
 
 alt-h = 'focus left'
 alt-j = 'focus down'
