@@ -24,7 +24,8 @@ else
 fi
 
 # Bar
-sketchybar --bar position=top height=32 color="$BAR_COLOR" display=all topmost=$TOPMOST
+sketchybar --bar position=top height=32 color="$BAR_COLOR" display=all
+# sketchybar --bar position=top height=32 color="$BAR_COLOR" display=all topmost=off
 
 # Defaults
 default=(
@@ -135,6 +136,15 @@ sketchybar --set battery \
   --subscribe battery system_woke power_source_change 
   
 
+# gpu fps (frames rendered to main display, via ScreenCaptureKit helper)
+sketchybar --add item gpu_fps right
+sketchybar --set gpu_fps \
+  icon.drawing=off \
+  label="--" \
+  label.color=0xffa6e3a1 \
+  label.padding_left=5
+
+
 
 # weather
 sketchybar --add item weather right \
@@ -177,6 +187,13 @@ sketchybar --add item top_process right \
     update_freq=10
 
 
+
+# run the fps helper daemon, bin/build.sh
+killall fps_helper 2>/dev/null || true
+if [ -x "$CONFIG_DIR/bin/fps_helper" ]; then
+  "$CONFIG_DIR/bin/fps_helper" >/dev/null 2>&1 &
+  disown
+fi
 
 # force all scripts to run once
 sketchybar --update

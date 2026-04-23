@@ -2,7 +2,8 @@
 export WHITE=0xffffffff
 
 # export BAR_COLOR=0xff1e1e2e # purply
-export BAR_COLOR=0xff000000
+# export BAR_COLOR=0xff000000
+export BAR_COLOR=0xff140017 # dark purple
 export ITEM_BG_COLOR=0xff313244 # idk
 export ACCENT_COLOR=0xffb4befe # lavender
 export RED=0xfff38ba8

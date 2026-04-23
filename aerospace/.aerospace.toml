@@ -24,7 +24,7 @@ inner.horizontal = 0
 inner.vertical =   0
 outer.left =       0
 outer.bottom =     0
-outer.top =        0
+outer.top =         0
 outer.right =      0
 
 [mode.main.binding]
@@ -60,6 +60,11 @@ alt-p = ['workspace P', 'exec-and-forget sketchybar --trigger aerospace_workspac
 alt-q = ['workspace Q', 'exec-and-forget sketchybar --trigger aerospace_workspace_change']
 alt-w = ['workspace W', 'exec-and-forget sketchybar --trigger aerospace_workspace_change']
 
+
+alt-a = ['workspace A', 'exec-and-forget sketchybar --trigger aerospace_workspace_change']
+alt-s = ['workspace S', 'exec-and-forget sketchybar --trigger aerospace_workspace_change']
+alt-d = ['workspace D', 'exec-and-forget sketchybar --trigger aerospace_workspace_change']
+
 # Move node to workspace (optional: also trigger, so the indicator updates if it changes focus)
 alt-shift-1 = ['move-node-to-workspace 1', 'exec-and-forget sketchybar --trigger aerospace_workspace_change']
 alt-shift-2 = ['move-node-to-workspace 2', 'exec-and-forget sketchybar --trigger aerospace_workspace_change']
@@ -76,6 +81,11 @@ alt-shift-o = ['move-node-to-workspace O', 'exec-and-forget sketchybar --trigger
 alt-shift-p = ['move-node-to-workspace P', 'exec-and-forget sketchybar --trigger aerospace_workspace_change']
 alt-shift-q = ['move-node-to-workspace Q', 'exec-and-forget sketchybar --trigger aerospace_workspace_change']
 alt-shift-w = ['move-node-to-workspace W', 'exec-and-forget sketchybar --trigger aerospace_workspace_change']
+
+
+alt-shift-a = ['move-node-to-workspace A', 'exec-and-forget sketchybar --trigger aerospace_workspace_change']
+alt-shift-s = ['move-node-to-workspace S', 'exec-and-forget sketchybar --trigger aerospace_workspace_change']
+alt-shift-d = ['move-node-to-workspace D', 'exec-and-forget sketchybar --trigger aerospace_workspace_change']
 
 # Back and forth
 alt-tab = ['workspace-back-and-forth', 'exec-and-forget sketchybar --trigger aerospace_workspace_change']
