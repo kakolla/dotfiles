@@ -103,6 +103,10 @@ vim.keymap.set('n', '<Leader>t', function()
   vim.cmd 'ToggleTerm size=40 dir=git_dir direction=float name=terminal'
 end)
 
+-- scroll by 2
+vim.keymap.set('n', '<C-e>', '2<C-e>', { noremap = true, silent = true })
+vim.keymap.set('n', '<C-y>', '2<C-y>', { noremap = true, silent = true })
+
 -- git signs diff keymaps
 vim.keymap.set('n', '<Leader>gs', function() require('gitsigns').preview_hunk() end, { desc = 'Preview git hunk (line(s) change) ' })
 vim.keymap.set('n', '<Leader>gr', function() require('gitsigns').reset_hunk() end, { desc = 'Restore git hunk (line(s) change) ' })
@@ -498,12 +502,14 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader>sc', builtin.commands, { desc = '[S]earch [C]ommands' })
+
       vim.keymap.set(
         'n',
         '<leader><leader>',
-        function() builtin.buffers { sort_mru = true, sorting_strategy = 'descending' } end,
+        function() builtin.buffers { sort_lastused = true, sorting_strategy = 'descending' } end,
         { desc = '[ ] Find existing buffers' }
       )
+
       -- This runs on LSP attach per buffer (see main LSP attach function in 'neovim/nvim-lspconfig' config for more info,
       -- it is better explained there). This allows easily switching between pickers if you prefer using something else!
       vim.api.nvim_create_autocmd('LspAttach', {
