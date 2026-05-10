@@ -506,7 +506,7 @@ require('lazy').setup({
       vim.keymap.set(
         'n',
         '<leader><leader>',
-        function() builtin.buffers { sort_lastused = true, sorting_strategy = 'descending' } end,
+        function() builtin.buffers { sort_lastused = true, sorting_strategy = 'ascending' } end,
         { desc = '[ ] Find existing buffers' }
       )
 
