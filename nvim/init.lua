@@ -383,6 +383,7 @@ require('lazy').setup({
         cond = function() return vim.fn.executable 'make' == 1 end,
       },
       { 'nvim-telescope/telescope-ui-select.nvim' },
+      { 'natecraddock/telescope-zf-native.nvim' },
 
       -- Useful for getting pretty icons, but requires a Nerd Font.
       { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
@@ -431,12 +432,18 @@ require('lazy').setup({
         -- pickers = {}
         extensions = {
           ['ui-select'] = { require('telescope.themes').get_dropdown() },
+          ['zf-native'] = {
+            -- disable globally; opt-in per picker (see <leader>sf below)
+            file = { enable = false },
+            generic = { enable = false },
+          },
         },
       }
 
       -- Enable Telescope extensions if they are installed
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
+      pcall(require('telescope').load_extension, 'zf-native')
 
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
@@ -451,6 +458,7 @@ require('lazy').setup({
           builtin.find_files {
             hidden = false,
             no_ignore = true,
+            sorter = require('telescope').extensions['zf-native'].native_zf_scorer { match_filename = true },
             find_command = {
               'fd',
               '--type',
