@@ -1,4 +1,4 @@
-# i3 config file (v4)
+# i3 config file
 
 set $mod Mod1
 
@@ -128,7 +128,7 @@ bindsym $mod+Shift+c reload
 bindsym $mod+Shift+r restart
 
 # Logout via Plasma
-bindsym $mod+Shift+e exec --no-startup-id qdbus6 org.kde.ksmserver /KSMServer org.kde.KSMServerInterface.logout -1 -1 -1
+bindsym $mod+Shift+e exec --no-startup-id qdbus6 org.kde.Shutdown /Shutdown org.kde.Shutdown.logout
 
 # Resize mode
 mode "resize" {
@@ -169,3 +169,5 @@ bindsym Ctrl+Mod4+XF86TouchpadToggle exec --no-startup-id ~/.local/bin/touchpad-
 bindsym XF86AudioPlay exec playerctl play-pause
 bindsym XF86AudioNext exec playerctl next
 bindsym XF86AudioPrev exec playerctl previous
+exec --no-startup-id setxkbmap -option caps:escape
+
