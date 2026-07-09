@@ -9,6 +9,7 @@ font pango:monospace 8
 exec --no-startup-id dex --autostart --environment i3
 exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
 exec --no-startup-id nm-applet
+exec --no-startup-id dunst
 
 # Default tabbed layout (accordion-like)
 workspace_layout stacking
@@ -151,7 +152,8 @@ bindsym $mod+r mode "resize"
 
 # Bar (hidden since Plasma has its own panel)
 bar {
-        status_command i3status
+        # status_command i3status
+        status_command ~/.config/i3/i3status-wrap.sh
         position bottom
 }
 
@@ -160,6 +162,8 @@ bindsym $mod+z focus child
 
 bindcode 133 exec --no-startup-id krunner
 # bindcode 134 exec --no-startup-id krunner
+bindsym XF86MonBrightnessDown exec --no-startup-id brightnessctl set 5%-
+bindsym XF86MonBrightnessUp exec --no-startup-id brightnessctl set 5%+
 
 # script to turn off touchpad from 530 code from kb (gs66)
 bindsym Ctrl+Mod4+XF86TouchpadToggle exec --no-startup-id ~/.local/bin/touchpad-toggle.sh
@@ -183,3 +187,7 @@ focus_wrapping no
 # Sensitivity adjustment (only on the Touchpad profile)
 #exec --no-startup-id xinput set-prop "PNP0C50:00 06CB:CDAA Touchpad" "libinput Accel Speed" -0.05
 
+# colors
+# client.focused 
+# client.background #090b2b
+client.focused  #090b2b #030526 #ffffff #2e9ef4   #285577
