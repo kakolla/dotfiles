@@ -9,24 +9,36 @@ if [ "$PERCENTAGE" = "" ]; then
   exit 0
 fi
 
-# Select icon based on percentage (adjusted for visual accuracy)
-if [ "$PERCENTAGE" -ge 88 ]; then
-  ICON="􀛨"   # battery.100
-elif [ "$PERCENTAGE" -ge 63 ]; then
-  ICON="􀺸"   # battery.75
-elif [ "$PERCENTAGE" -ge 38 ]; then
-  ICON="􀺶"   # battery.50
-elif [ "$PERCENTAGE" -ge 13 ]; then
-  ICON="􀛩"   # battery.25
+# Battery glyph (Material Design Icons, rendered in Hack Nerd Font)
+if [ -n "$CHARGING" ]; then
+  ICON="󰂄"        # charging bolt
+elif [ "$PERCENTAGE" -ge 95 ]; then
+  ICON="󰁹"
+elif [ "$PERCENTAGE" -ge 85 ]; then
+  ICON="󰂂"
+elif [ "$PERCENTAGE" -ge 75 ]; then
+  ICON="󰂁"
+elif [ "$PERCENTAGE" -ge 65 ]; then
+  ICON="󰂀"
+elif [ "$PERCENTAGE" -ge 55 ]; then
+  ICON="󰁿"
+elif [ "$PERCENTAGE" -ge 45 ]; then
+  ICON="󰁾"
+elif [ "$PERCENTAGE" -ge 35 ]; then
+  ICON="󰁽"
+elif [ "$PERCENTAGE" -ge 25 ]; then
+  ICON="󰁼"
+elif [ "$PERCENTAGE" -ge 15 ]; then
+  ICON="󰁻"
+elif [ "$PERCENTAGE" -ge 8 ]; then
+  ICON="󰁺"
 else
-  ICON="􀛪"   # battery.0
+  ICON="󰂃"          # critically low
 fi
 
-# Icon stays the same whether charging or not - color indicates charging
-
-# Color: red at <=10%, orange at <=20%, green when charging, white otherwise
-if [[ "$CHARGING" != "" ]]; then
-  COLOR="0xffa6e3a1"  # green when charging
+# Color: green when charging, red <=10%, orange <=20%, white otherwise
+if [ -n "$CHARGING" ]; then
+  COLOR="0xffa6e3a1"
 elif [ "$PERCENTAGE" -le 10 ]; then
   COLOR="$RED"
 elif [ "$PERCENTAGE" -le 20 ]; then

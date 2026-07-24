@@ -13,4 +13,4 @@ else
   ICON_COLOR="0xffffffff"
 fi
 
-sketchybar --set "$NAME" icon="$ICON" icon.color="$ICON_COLOR" icon.font="JetBrainsMono Nerd Font:Medium:15.0" label="${VOL}%"
+sketchybar --set "$NAME" icon="$ICON" icon.color="$ICON_COLOR" icon.font="Hack Nerd Font:Regular:15.0" label="${VOL}%"
