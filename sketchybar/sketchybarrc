@@ -1,10 +1,15 @@
 #!/usr/bin/env sh
 set -euo pipefail
 
-~/.config/display_mode.sh # upon restart, display bar based on clamshell or laptop mode
+# Set PATH before anything else: launchd starts this service with a minimal
+# PATH that omits /opt/homebrew/bin and /usr/local/bin, so tools like
+# `aerospace` (used by display_mode.sh) would not be found. Combined with
+# `set -e` above, a not-found command would abort the rc and leave an empty bar.
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+
+~/.config/display_mode.sh # upon restart, display bar based on mirror or laptop mode
 
 export CONFIG_DIR="$HOME/.config/sketchybar"
-export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 PLUGIN_DIR="$CONFIG_DIR/plugins"
 ITEM_DIR="$CONFIG_DIR/items"
@@ -15,9 +20,14 @@ source "$CONFIG_DIR/colors.sh"
 killall stats_provider 2>/dev/null || true
 # stats_provider --memory ram_available &
 
-# Detect clamshell (lid closed)
-CLAMSHELL=$(ioreg -r -k AppleClamshellState -d 4 | grep AppleClamshellState | awk '{print $NF}')
-if [ "$CLAMSHELL" = "Yes" ]; then
+# Detect mirroring to an external monitor (this laptop is never in clamshell).
+# When mirrored, the external monitor has no notch, so keep the bar on top.
+DISPLAYS=$(system_profiler SPDisplaysDataType 2>/dev/null)
+case "$DISPLAYS" in
+  *"Mirror: On"*) MIRRORING=Yes ;;
+  *) MIRRORING=No ;;
+esac
+if [ "$MIRRORING" = "Yes" ]; then
   TOPMOST=on
 else
   TOPMOST=off
@@ -31,8 +41,8 @@ sketchybar --bar position=top height=32 color="$BAR_COLOR" display=all
 default=(
   padding_left=6
   padding_right=6
-  icon.font="JetBrainsMono Nerd Font:Medium:12.0"
-  label.font="JetBrainsMono Nerd Font:Medium:12.0"
+  icon.font="Hack Nerd Font:Regular:12.0"
+  label.font="Hack Nerd Font:Regular:12.0"
   icon.color="$WHITE"
   label.color="$WHITE"
   icon.padding_left=6
@@ -64,7 +74,51 @@ sketchybar --add item front_app_left left \
 # run once at startup so it shows immediately
 sketchybar --trigger front_app_switched
 
-# pomodoro timer 
+# memory usage graph (left, right after the app chip)
+sketchybar --add graph mem_graph left 50
+sketchybar --set mem_graph \
+  script="$PLUGIN_DIR/memory_graph.sh" \
+  update_freq=5 \
+  icon.drawing=off \
+  label.drawing=on \
+  label.color=0xffa6e3a1 \
+  graph.color=0xffa6e3a1 \
+  graph.fill_color=0x55a6e3a1 \
+  graph.line_width=2 \
+  drawing=on
+
+# my pending diffs -> one chip per diff (e.g. "D994: Passed"), managed by the
+# diff_status driver item, which is itself invisible.
+sketchybar --add item diff_status left \
+  --set diff_status \
+    update_freq=300 \
+    drawing=off \
+    script="$PLUGIN_DIR/diff_status.sh" \
+  --subscribe diff_status system_woke
+
+# sleep toggle (pmset -a disablesleep) — click to keep the Mac awake
+sketchybar --add item sleep_toggle left \
+  --set sleep_toggle \
+    update_freq=30 \
+    icon.font="Hack Nerd Font:Regular:14.0" \
+    label.padding_right=8 \
+    background.corner_radius=6 \
+    background.height=18 \
+    script="$PLUGIN_DIR/sleep_toggle.sh" \
+  --subscribe sleep_toggle mouse.clicked
+
+# next meeting + minutes left (blue, red under 15 min) — after the awake chip
+sketchybar --add item next_meeting left \
+  --set next_meeting \
+    update_freq=60 \
+    icon.drawing=off \
+    label.padding_left=8 \
+    label.padding_right=8 \
+    script="$PLUGIN_DIR/next_meeting.sh" \
+    click_script="open 'https://calendar.google.com/calendar/u/0/r'" \
+  --subscribe next_meeting system_woke
+
+# pomodoro timer
 sketchybar --add event timer_change
 sketchybar --add item timer left \
   --set timer \
@@ -72,7 +126,7 @@ sketchybar --add item timer left \
     update_freq=0 \
     icon.color=0xffcba6f7 \
     label.color=0xffcba6f7 \
-    icon.font="JetBrainsMono Nerd Font:Medium:14.0" \
+    icon.font="Hack Nerd Font:Regular:14.0" \
     drawing=off \
   --subscribe timer timer_change
 
@@ -101,6 +155,32 @@ sketchybar --set cpu_usage \
   graph.fill_color=0x55cba6f7 \
   graph.line_width=2 \
   drawing=on
+
+# CPU temperature (via macmon)
+sketchybar --add item cpu_temp right
+sketchybar --set cpu_temp \
+  update_freq=15 \
+  icon.drawing=off \
+  label.color=0xfff38ba8 \
+  label="--" \
+  script="$PLUGIN_DIR/cpu_temp.sh"
+
+# power draw (watts, via macmon)
+sketchybar --add item power_draw right
+sketchybar --set power_draw \
+  update_freq=15 \
+  icon.drawing=off \
+  label.color=0xfffab387 \
+  label="--" \
+  script="$PLUGIN_DIR/power_draw.sh"
+
+# memory usage (used GB + % of RAM)
+sketchybar --add item memory right
+sketchybar --set memory \
+  update_freq=10 \
+  icon.drawing=off \
+  label.color=0xffa6e3a1 \
+  script="$PLUGIN_DIR/memory_usage.sh"
 
 # ram available
 # sketchybar --add item ram_available right \
@@ -131,33 +211,36 @@ sketchybar --add item battery right
 sketchybar --set battery \
     update_freq=600 \
     script="$PLUGIN_DIR/battery.sh" \
-    icon.font="SF Pro:Regular:16.0" \
+    icon.font="Hack Nerd Font:Regular:16.0" \
     padding_right=4 \
   --subscribe battery system_woke power_source_change 
   
 
-# gpu fps (frames rendered to main display, via ScreenCaptureKit helper)
-sketchybar --add item gpu_fps right
-sketchybar --set gpu_fps \
-  icon.drawing=off \
-  label="--" \
-  label.color=0xffa6e3a1 \
-  label.padding_left=5
+# gpu fps (removed — helper wasn't producing data, item just showed "--")
+# sketchybar --add item gpu_fps right
+# sketchybar --set gpu_fps \
+#   icon.drawing=off \
+#   label="--" \
+#   label.color=0xffa6e3a1 \
+#   label.padding_left=5
 
 
 
 # weather
-sketchybar --add item weather right \
-  --set weather \
-    script="$PLUGIN_DIR/weather.sh" \
-    update_freq=1800 \
-    icon.drawing=off \
-    label.color=$WHITE \
-    click_script="open -a Weather"
+# sketchybar --add item weather right \
+#   --set weather \
+#     script="$PLUGIN_DIR/weather.sh" \
+#     update_freq=1800 \
+#     icon.drawing=off \
+#     label.color=$WHITE \
+#     click_script="open -a Weather"
 
 
 # --- Aerospace (current workspace, event-driven) ---
-if command -v aerospace >/dev/null 2>&1; then
+if command -v aerospace >/dev/null 2>&1 \
+  || [ -x /opt/homebrew/bin/aerospace ] \
+  || [ -x /usr/local/bin/aerospace ] \
+  || [ -x "$HOME/.local/bin/aerospace" ]; then
   sketchybar --add event aerospace_workspace_change
 
   sketchybar --add item aero_space right \
@@ -171,7 +254,7 @@ if command -v aerospace >/dev/null 2>&1; then
       background.height=18 \
       label.padding_left=10 \
       label.padding_right=10 \
-      label.font="JetBrainsMono Nerd Font:Bold:12.0" \
+      label.font="Hack Nerd Font:Bold:12.0" \
     --subscribe aero_space aerospace_workspace_change
 
   # run once at startup
@@ -188,12 +271,12 @@ sketchybar --add item top_process right \
 
 
 
-# run the fps helper daemon, bin/build.sh
+# fps helper daemon disabled (gpu_fps item removed)
 killall fps_helper 2>/dev/null || true
-if [ -x "$CONFIG_DIR/bin/fps_helper" ]; then
-  "$CONFIG_DIR/bin/fps_helper" >/dev/null 2>&1 &
-  disown
-fi
+# if [ -x "$CONFIG_DIR/bin/fps_helper" ]; then
+#   "$CONFIG_DIR/bin/fps_helper" >/dev/null 2>&1 &
+#   disown
+# fi
 
 # force all scripts to run once
 sketchybar --update
